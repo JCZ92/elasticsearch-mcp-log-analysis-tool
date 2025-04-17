@@ -1,0 +1,35 @@
+filebeat.inputs:
+  - type: filestream
+    id: "r-log"
+    paths:
+      - /var/log/*.log
+    parsers:
+      - multiline:
+          pattern: '^Rscript :|^Execution halted'
+          negate: false
+          match: after
+
+    index: "%{[agent.name]}-r-log-%{+yyyy.MM.dd}"
+
+processors:
+  # - grok:
+  #     field: message
+  #     patterns:
+  #       - '^Rscript : (?P<error_msg>Error: .+)$'
+
+output.elasticsearch:
+  hosts: ["https://es01:9200"]
+  username: "filebeat_internal"
+  password: "test123"
+  ssl:
+    enabled: true
+    # ca_trusted_fingerprint: "3393F6B0AD28D213C34E1D8BF3F731393B78FD107B180C8C11222B357231F233"
+    certificate_authorities: ["/usr/share/filebeat/config/certs/ca/ca.crt"]
+    verification_mode: certificate
+  # index: "%{[agent.name]}-r-log-%{+yyyy.MM.dd}"
+  
+setup:
+  kibana:
+    host: "http://kibana:5601"
+  dashboards:
+    enabled: true
